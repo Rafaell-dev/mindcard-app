@@ -65,7 +65,7 @@ fun NavGraph(
                     navController.navigate(Screen.AddFlashcard.route)
                 }
             )
-        } // <--- AQUI FALTAVA FECHAR A HOME ANTES DE COMEÇAR A PRÓXIMA
+        }
 
         // ROTA PRACTICE
         composable(Screen.Practice.route) {
@@ -76,7 +76,7 @@ fun NavGraph(
             val formattedTime = "%02d:%02d".format(minutes, seconds)
 
             if (state.isFinished) {
-                // Efeito colateral de navegação deve ser cuidado, mas funcional por enquanto
+
                 navController.navigate(Screen.Result.route) {
                     popUpTo(Screen.Practice.route) { inclusive = true }
                 }
@@ -117,9 +117,9 @@ fun NavGraph(
             )
         }
 
-        // ROTA ADD FLASHCARD (Faltava declarar no seu código original, adicionei para evitar crash)
+
         composable(Screen.AddFlashcard.route) {
-            // Exemplo: AddFlashcardScreen(...)
+
         }
     }
 }

@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// Estado da UI (Dados que a tela precisa desenhar)
+// Estado da UI
 data class PracticeUiState(
     val mindcard: Mindcard? = null,
     val currentIndex: Int = 0,
@@ -67,8 +67,8 @@ class PracticeViewModel : ViewModel() {
         val nextIndex = currentState.currentIndex + 1
 
         if (nextIndex >= totalItems) {
-            // Acabou o deck
-            timerJob?.cancel() // Para o relógio
+
+            timerJob?.cancel()
             _uiState.update {
                 it.copy(
                     correctCount = if (isCorrect) it.correctCount + 1 else it.correctCount,
@@ -76,7 +76,7 @@ class PracticeViewModel : ViewModel() {
                 )
             }
         } else {
-            // Próximo card
+
             _uiState.update {
                 it.copy(
                     currentIndex = nextIndex,
