@@ -2,9 +2,11 @@ package com.mindcard.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.mindcard.data.model.Mindcard
-import com.mindcard.data.model.MindcardItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import com.mindcard.data.repository.MindcardRepository
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
 data class PracticeState(
     val mindcard: Mindcard? = null,
@@ -15,12 +17,17 @@ data class PracticeState(
     val isFinished: Boolean = false
 )
 
-class PracticeViewModel : ViewModel() {
+class PracticeViewModel(private val repository: MindcardRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(PracticeState())
     val uiState: StateFlow<PracticeState> = _uiState
 
-    fun startPractice(mindcard: Mindcard) {
-        _uiState.value = PracticeState(mindcard = mindcard)
+    fun loadMindcard(id: String) {
+        viewModelScope.launch {
+            val mindcard = repository.getMindcard(id)
+            if (mindcard != null) {
+                _uiState.value = PracticeState(mindcard = mindcard)
+            }
+        }
     }
 
     fun revealAnswer() {

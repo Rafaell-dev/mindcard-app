@@ -17,12 +17,13 @@ import com.mindcard.ui.theme.MindCardColors
 import com.mindcard.ui.theme.MindCardTypography
 
 @Composable
-fun LoginScreen(
-    onLogin: (String, String) -> Unit,
-    onRegisterClick: () -> Unit,
+fun RegisterScreen(
+    onRegister: (String, String, String) -> Unit,
+    onLoginClick: () -> Unit,
     errorMessage: String? = null,
     onDismissError: () -> Unit = {}
 ) {
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
@@ -30,8 +31,8 @@ fun LoginScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val translatedMessage = when (errorMessage) {
-        "INVALID_CREDENTIALS" -> "E-mail ou senha incorretos."
-        "USER_NOT_FOUND" -> "Usuário não encontrado."
+        "EMAIL_ALREADY_EXISTS" -> "Este e-mail já está em uso."
+        "INVALID_EMAIL" -> "E-mail inválido."
         null -> null
         else -> errorMessage
     }
@@ -67,14 +68,20 @@ fun LoginScreen(
                 .padding(bottom = 32.dp)
         )
 
-        Text("Entrar", style = MindCardTypography.Heading2)
+        Text("Criar conta", style = MindCardTypography.Heading2)
         Text(
-            "Acesse sua conta para continuar",
+            "Preencha os dados abaixo para começar",
             style = MindCardTypography.Caption,
             color = MindCardColors.MutedForeground
         )
         Spacer(Modifier.height(32.dp))
 
+        MindCardTextField(
+            value = name,
+            onValueChange = { name = it },
+            placeholder = "Nome completo"
+        )
+        Spacer(Modifier.height(16.dp))
         MindCardTextField(
             value = email,
             onValueChange = { email = it },
@@ -90,24 +97,24 @@ fun LoginScreen(
         Spacer(Modifier.height(24.dp))
 
         PrimaryButton(
-            text = "Entrar",
+            text = "Cadastrar",
             onClick = {
                 keyboardController?.hide()
-                onLogin(email, password)
+                onRegister(name, email, password)
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = email.isNotBlank() && password.isNotBlank()
+            enabled = name.isNotBlank() && email.isNotBlank() && password.isNotBlank()
         )
 
         Spacer(Modifier.height(24.dp))
 
         Row {
-            Text("Não tem uma conta? ", style = MindCardTypography.Caption)
+            Text("Já tem uma conta? ", style = MindCardTypography.Caption)
             Text(
-                "Cadastre-se",
+                "Entrar",
                 style = MindCardTypography.Caption.copy(fontWeight = FontWeight.Bold),
                 color = MindCardColors.Primary,
-                modifier = Modifier.clickable { onRegisterClick() }
+                modifier = Modifier.clickable { onLoginClick() }
             )
         }
     }
