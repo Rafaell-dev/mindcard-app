@@ -31,7 +31,7 @@ fun NavGraph(
 ) {
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(authService, sessionManager))
     val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(mindcardRepository))
-    val practiceViewModel: PracticeViewModel = viewModel()
+    val practiceViewModel: PracticeViewModel = viewModel(factory = PracticeViewModelFactory(mindcardRepository))
 
     val currentUser by authViewModel.currentUser.collectAsState()
     val startDestination = if (currentUser != null) Screen.Home.route else Screen.Login.route
@@ -97,6 +97,65 @@ fun NavGraph(
             )
         }
 
+        composable(
+            route = Screen.Practice.route + "/{mindcardId}",
+            arguments = listOf(androidx.navigation.navArgument("mindcardId") { type = androidx.navigation.NavType.StringType })
+        ) { backStackEntry ->
+            val mindcardId = backStackEntry.arguments?.getString("mindcardId") ?: return@composable
+            
+            LaunchedEffect(mindcardId) {
+                practiceViewModel.loadMindcard(mindcardId)
+            }
+
+            val uiState by practiceViewModel.uiState.collectAsState()
+
+            LaunchedEffect(uiState.isFinished) {
+                if (uiState.isFinished) {
+                    navController.navigate(Screen.Result.route + "/${uiState.correctCount}/${uiState.mindcard?.items?.size ?: 0}") {
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                    }
+                }
+            }
+
+            PracticeScreen(
+                item = uiState.mindcard?.items?.getOrNull(uiState.currentIndex),
+                currentIndex = uiState.currentIndex,
+                totalItems = uiState.mindcard?.items?.size ?: 0,
+                isAnswerVisible = uiState.isAnswerVisible,
+                onRevealAnswer = { practiceViewModel.revealAnswer() },
+                onCorrect = { practiceViewModel.markCorrect() },
+                onIncorrect = { practiceViewModel.markIncorrect() },
+                onSkip = { practiceViewModel.skip() },
+                onClose = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.Result.route + "/{correct}/{total}",
+            arguments = listOf(
+                androidx.navigation.navArgument("correct") { type = androidx.navigation.NavType.IntType },
+                androidx.navigation.navArgument("total") { type = androidx.navigation.NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val correctCount = backStackEntry.arguments?.getInt("correct") ?: 0
+            val totalCount = backStackEntry.arguments?.getInt("total") ?: 0
+
+            ResultScreen(
+                correctCount = correctCount,
+                totalCount = totalCount,
+                onClose = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                },
+                onRestart = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(Screen.Home.route) {
             val mindcards by homeViewModel.mindcards.collectAsState()
             val userName = currentUser?.nome ?: "Usuário"
@@ -110,8 +169,7 @@ fun NavGraph(
                 userName = userName,
                 mindcards = mindcards,
                 onMindcardClick = { mindcard ->
-                    // TODO: Navegar pra tela de prática
-                    // navController.navigate(Screen.Practice.route + "/${mindcard.id}")
+                    navController.navigate(Screen.Practice.route + "/${mindcard.id}")
                 }
             )
         }
@@ -136,6 +194,16 @@ class HomeViewModelFactory(private val mindcardRepository: MindcardRepository) :
     override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
             return HomeViewModel(mindcardRepository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
+    }
+}
+
+class PracticeViewModelFactory(private val mindcardRepository: MindcardRepository) : androidx.lifecycle.ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(PracticeViewModel::class.java)) {
+            return PracticeViewModel(mindcardRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
