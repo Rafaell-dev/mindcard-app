@@ -32,6 +32,17 @@ class AuthViewModel(
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
+    init {
+        // Tenta recuperar o usuário da sessão
+        val savedUser = sessionManager.fetchUser()
+        val savedToken = sessionManager.fetchAuthToken()
+
+        if (savedUser != null && savedToken != null) {
+            _currentUser.value = savedUser
+            _authState.value = AuthState.Success(savedUser)
+        }
+    }
+
     fun login(email: String, senha: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
@@ -43,6 +54,10 @@ class AuthViewModel(
                     
                     if (accessToken != null) {
                         sessionManager.saveAuthToken(accessToken)
+                    }
+
+                    if (user != null) {
+                        sessionManager.saveUser(user)
                     }
 
                     _currentUser.value = user
@@ -92,6 +107,12 @@ class AuthViewModel(
     }
 
     fun resetAuthState() {
+        _authState.value = AuthState.Idle
+    }
+    
+    fun logout() {
+        sessionManager.clearAuthToken()
+        _currentUser.value = null
         _authState.value = AuthState.Idle
     }
 }
