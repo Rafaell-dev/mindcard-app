@@ -146,9 +146,32 @@ fun MindcardCard(
         ) {
             icon()
             Spacer(Modifier.width(12.dp))
-            Text(text = title, style = MindCardTypography.Heading3)
+                Text(text = title, style = MindCardTypography.Heading3)
         }
     }
+}
+
+@Composable
+fun MindCardTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    isPassword: Boolean = false
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = { Text(placeholder) },
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        singleLine = true,
+        visualTransformation = if (isPassword) androidx.compose.ui.text.input.PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MindCardColors.Primary,
+            unfocusedBorderColor = MindCardColors.Border
+        )
+    )
 }
 
 @Composable

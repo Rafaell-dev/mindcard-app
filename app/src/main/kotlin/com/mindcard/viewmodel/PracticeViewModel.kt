@@ -8,6 +8,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import com.mindcard.data.repository.MindcardRepository
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 // Estado da UI
@@ -41,6 +45,15 @@ class PracticeViewModel : ViewModel() {
                 _uiState.update {
                     it.copy(elapsedTimeSeconds = it.elapsedTimeSeconds + 1)
                 }
+class PracticeViewModel(private val repository: MindcardRepository) : ViewModel() {
+    private val _uiState = MutableStateFlow(PracticeState())
+    val uiState: StateFlow<PracticeState> = _uiState
+
+    fun loadMindcard(id: String) {
+        viewModelScope.launch {
+            val mindcard = repository.getMindcard(id)
+            if (mindcard != null) {
+                _uiState.value = PracticeState(mindcard = mindcard)
             }
         }
     }
