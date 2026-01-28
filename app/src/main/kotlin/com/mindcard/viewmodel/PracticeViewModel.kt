@@ -1,17 +1,16 @@
 package com.mindcard.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.mindcard.data.model.Mindcard
+import com.mindcard.data.repository.MindcardRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import com.mindcard.data.repository.MindcardRepository
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 // Estado da UI
@@ -21,20 +20,32 @@ data class PracticeUiState(
     val isAnswerVisible: Boolean = false,
     val correctCount: Int = 0,
     val isFinished: Boolean = false,
-    val elapsedTimeSeconds: Long = 0 // <--- Novo campo para o Timer
+    val elapsedTimeSeconds: Long = 0
 )
 
-class PracticeViewModel : ViewModel() {
+class PracticeViewModel(private val repository: MindcardRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PracticeUiState())
-    val uiState = _uiState.asStateFlow()
+    val uiState: StateFlow<PracticeUiState> = _uiState.asStateFlow()
 
     private var timerJob: Job? = null
+
+    // Carrega o mindcard pelo ID
+    fun loadMindcard(id: String) {
+        viewModelScope.launch {
+            val mindcard = repository.getMindcard(id)
+            if (mindcard != null) {
+                // Ao carregar novo card, reseta o estado mas mantém o card
+                _uiState.value = PracticeUiState(mindcard = mindcard)
+                startTimer()
+            }
+        }
+    }
 
     // Inicia a sessão de estudos
     fun startPractice(mindcard: Mindcard) {
         _uiState.value = PracticeUiState(mindcard = mindcard)
-        startTimer() // Começa a contar!
+        startTimer()
     }
 
     private fun startTimer() {
@@ -45,15 +56,6 @@ class PracticeViewModel : ViewModel() {
                 _uiState.update {
                     it.copy(elapsedTimeSeconds = it.elapsedTimeSeconds + 1)
                 }
-class PracticeViewModel(private val repository: MindcardRepository) : ViewModel() {
-    private val _uiState = MutableStateFlow(PracticeState())
-    val uiState: StateFlow<PracticeState> = _uiState
-
-    fun loadMindcard(id: String) {
-        viewModelScope.launch {
-            val mindcard = repository.getMindcard(id)
-            if (mindcard != null) {
-                _uiState.value = PracticeState(mindcard = mindcard)
             }
         }
     }
@@ -80,7 +82,6 @@ class PracticeViewModel(private val repository: MindcardRepository) : ViewModel(
         val nextIndex = currentState.currentIndex + 1
 
         if (nextIndex >= totalItems) {
-
             timerJob?.cancel()
             _uiState.update {
                 it.copy(
@@ -89,7 +90,6 @@ class PracticeViewModel(private val repository: MindcardRepository) : ViewModel(
                 )
             }
         } else {
-
             _uiState.update {
                 it.copy(
                     currentIndex = nextIndex,
@@ -111,5 +111,15 @@ class PracticeViewModel(private val repository: MindcardRepository) : ViewModel(
     override fun onCleared() {
         super.onCleared()
         timerJob?.cancel()
+    }
+}
+
+class PracticeViewModelFactory(private val repository: MindcardRepository) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(PracticeViewModel::class.java)) {
+            return PracticeViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
 }

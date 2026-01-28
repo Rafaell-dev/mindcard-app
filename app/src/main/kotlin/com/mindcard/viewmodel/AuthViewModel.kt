@@ -20,8 +20,6 @@ sealed class AuthState {
     data class Error(val message: String) : AuthState()
 }
 
-
-
 class AuthViewModel(
     private val authService: AuthService,
     private val sessionManager: SessionManager
@@ -118,11 +116,14 @@ class AuthViewModel(
     }
 }
 
-@Suppress("UNCHECKED_CAST")
-class AuthViewModelFactory(private val repository: AuthRepository) : ViewModelProvider.Factory {
+class AuthViewModelFactory(
+    private val authService: AuthService,
+    private val sessionManager: SessionManager
+) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
-            return AuthViewModel(repository) as T
+            return AuthViewModel(authService, sessionManager) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
