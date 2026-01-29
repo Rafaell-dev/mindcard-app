@@ -10,8 +10,11 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PATCH
+import retrofit2.http.Path
 
 // Modelos de Resposta
 data class FlashcardResponse(
@@ -28,12 +31,40 @@ data class DeckResponse(
     val flashcards: List<FlashcardResponse>
 )
 
+// Modelos de Request para atualização
+data class UpdateFlashcardRequest(
+    val pergunta: String,
+    val resposta: String
+)
+
+data class UpdateDeckRequest(
+    val titulo: String,
+    val novosFlashcards: List<NewFlashcardRequest> = emptyList()
+)
+
+data class NewFlashcardRequest(
+    val pergunta: String,
+    val resposta: String
+)
+
 interface DeckApi {
     @GET("deck/listar")
     suspend fun listarDecks(): Response<List<DeckResponse>>
 
     @POST("deck/cadastrar")
     suspend fun createDeck(@Body request: DeckRequest): Response<Unit>
+    
+    @DELETE("deck/deletar/{id}")
+    suspend fun deleteDeck(@Path("id") id: String): Response<Unit>
+    
+    @PATCH("deck/atualizar/{id}")
+    suspend fun updateDeck(@Path("id") id: String, @Body request: UpdateDeckRequest): Response<Unit>
+    
+    @DELETE("flashcard/deletar/{id}")
+    suspend fun deleteFlashcard(@Path("id") id: String): Response<Unit>
+    
+    @PATCH("flashcard/atualizar/{id}")
+    suspend fun updateFlashcard(@Path("id") id: String, @Body request: UpdateFlashcardRequest): Response<Unit>
 }
 
 class DeckService(private val tokenProvider: () -> String?) {
