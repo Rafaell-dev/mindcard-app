@@ -67,33 +67,23 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .padding(top = 24.dp, bottom = 8.dp)
                 ) {
-                    // LOGO NO TOPO - Ajustado para ficar mais próximo do texto
-                    Image(
-                        painter = painterResource(id = R.drawable.logo),
-                        contentDescription = "Logo MindCard",
-                        modifier = Modifier
-                            .width(150.dp) // Largura definida
-                            .wrapContentHeight() // Altura mínima necessária
-                            .padding(bottom = 13.dp), // Remove espaço extra abaixo
-                        contentScale = ContentScale.Fit,
-                        alignment = Alignment.CenterStart
-                    )
-
+                    // PRIMEIRA LINHA: LOGO + BOTÕES
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Olá, $userName!", style = MindCardTypography.Heading2)
-                            Text(
-                                "Vamos estudar hoje?",
-                                style = MindCardTypography.Body,
-                                color = MindCardColors.MutedForeground
-                            )
-                        }
+                        Image(
+                            painter = painterResource(id = R.drawable.logo),
+                            contentDescription = "Logo MindCard",
+                            modifier = Modifier
+                                .width(130.dp)
+                                .wrapContentHeight(),
+                            contentScale = ContentScale.Fit,
+                            alignment = Alignment.CenterStart
+                        )
 
-                        Row {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             IconButton(onClick = onRefreshClick) {
                                 Icon(
                                     imageVector = Icons.Default.Refresh,
@@ -110,6 +100,20 @@ fun HomeScreen(
                                 )
                             }
                         }
+                    }
+
+                    // SEGUNDA LINHA: SAUDAÇÃO (Logo abaixo da primeira linha)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp)
+                    ) {
+                        Text("Olá, $userName!", style = MindCardTypography.Heading2)
+                        Text(
+                            "Vamos estudar hoje?",
+                            style = MindCardTypography.Body,
+                            color = MindCardColors.MutedForeground
+                        )
                     }
                 }
             }
