@@ -98,7 +98,8 @@ fun NavGraph(
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }
-                }
+                },
+                onRefreshClick = { homeViewModel.loadMindcards() },
             )
         }
 

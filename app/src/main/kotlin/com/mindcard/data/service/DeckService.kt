@@ -13,27 +13,24 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 
-// Modelos de Resposta (Vindo do seu amigo)
+// Modelos de Resposta
 data class FlashcardResponse(
     val id: String,
     val pergunta: String,
-    val resposta: String,
-    val dificuldade: String
+    val resposta: String
 )
 
 data class DeckResponse(
     val id: String,
     val titulo: String,
+    val usuarioId: String? = null,
+    val dataCriacao: String? = null,
     val flashcards: List<FlashcardResponse>
-)
-
-data class ListarDecksResponse(
-    val decks: List<DeckResponse>
 )
 
 interface DeckApi {
     @GET("deck/listar")
-    suspend fun listarDecks(): Response<ListarDecksResponse>
+    suspend fun listarDecks(): Response<List<DeckResponse>>
 
     @POST("deck/cadastrar")
     suspend fun createDeck(@Body request: DeckRequest): Response<Unit>
@@ -83,7 +80,6 @@ fun FlashcardResponse.toMindcardItem(): MindcardItem {
     return MindcardItem(
         id = this.id,
         question = this.pergunta,
-        answer = this.resposta,
-        difficulty = this.dificuldade
+        answer = this.resposta
     )
 }
