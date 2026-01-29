@@ -2,53 +2,63 @@ package com.mindcard.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mindcard.data.model.Mindcard
-import com.mindcard.data.model.MindcardItem
 import com.mindcard.data.repository.MindcardRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
+import com.mindcard.data.model.MindcardItem
 
 class AddFlashcardViewModel(private val repository: MindcardRepository) : ViewModel() {
 
-    private val _title = MutableStateFlow("")
-    val title = _title.asStateFlow()
+    private val _deckTitle = MutableStateFlow("")
+    val deckTitle = _deckTitle.asStateFlow()
 
-    private val _question = MutableStateFlow("")
-    val question = _question.asStateFlow()
+    private val _cards = MutableStateFlow(listOf(createEmptyCard()))
+    val cards = _cards.asStateFlow()
 
-    private val _answer = MutableStateFlow("")
-    val answer = _answer.asStateFlow()
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
 
-    fun onTitleChange(newValue: String) { _title.value = newValue }
-    fun onQuestionChange(newValue: String) { _question.value = newValue }
-    fun onAnswerChange(newValue: String) { _answer.value = newValue }
+    private fun createEmptyCard() = MindcardItem(
+        id = UUID.randomUUID().toString(),
+        question = "",
+        answer = ""
+    )
 
-    fun saveFlashcard(onSuccess: () -> Unit) {
-        val currentTitle = _title.value
-        val currentQuestion = _question.value
-        val currentAnswer = _answer.value
+    fun reset() {
+        _deckTitle.value = ""
+        _cards.value = listOf(createEmptyCard())
+        _isLoading.value = false
+    }
 
-        if (currentTitle.isBlank() || currentQuestion.isBlank() || currentAnswer.isBlank()) return
+    fun onDeckTitleChange(newValue: String) { _deckTitle.value = newValue }
+    fun addCardItem() { _cards.value = _cards.value + createEmptyCard() }
+    fun removeCardItem(id: String) {
+        if (_cards.value.size > 1) {
+            _cards.value = _cards.value.filter { it.id != id }
+        }
+    }
+
+    fun onCardChange(id: String, question: String, answer: String) {
+        _cards.value = _cards.value.map {
+            if (it.id == id) it.copy(question = question, answer = answer) else it
+        }
+    }
+
+    fun saveDeck(onSuccess: () -> Unit) {
+        val title = _deckTitle.value
+        val currentCards = _cards.value
+        if (title.isBlank() || currentCards.any { it.question.isBlank() || it.answer.isBlank() }) return
 
         viewModelScope.launch {
-            // CORREÇÃO AQUI: Criando a estrutura completa que seu Model exige
-            val newCard = Mindcard(
-                id = UUID.randomUUID().toString(), // Gera um ID único automático
-                title = currentTitle,
-                category = "Geral", // Categoria padrão (já que não temos campo pra isso ainda)
-                items = listOf(
-                    MindcardItem(
-                        id = UUID.randomUUID().toString(),
-                        question = currentQuestion,
-                        answer = currentAnswer
-                    )
-                )
-            )
-
-            repository.insertMindcard(newCard)
-            onSuccess()
+            _isLoading.value = true
+            val result = repository.saveDeckOnApi(title, currentCards)
+            _isLoading.value = false
+            result.onSuccess {
+                reset() // Limpa os campos após salvar
+                onSuccess()
+            }
         }
     }
 }

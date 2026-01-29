@@ -11,15 +11,17 @@ import com.mindcard.data.service.AuthService
 import com.mindcard.data.repository.MindcardRepository
 import com.mindcard.navigation.NavGraph
 import com.mindcard.ui.theme.MindCardTheme
+import com.mindcard.data.local.SessionManager
 
 class MainActivity : ComponentActivity() {
     private val authService = AuthService()
-    private val mindcardRepository = MindcardRepository()
-    private lateinit var sessionManager: com.mindcard.data.local.SessionManager
+    private lateinit var sessionManager: SessionManager
+    private lateinit var mindcardRepository: MindcardRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sessionManager = com.mindcard.data.local.SessionManager(this)
+        sessionManager = SessionManager(this)
+        mindcardRepository = MindcardRepository(sessionManager = sessionManager)
 
         setContent {
             MindCardTheme {

@@ -1,32 +1,55 @@
 package com.mindcard.data.repository
 
+import com.mindcard.data.local.SessionManager
+import com.mindcard.data.model.DeckRequest
+import com.mindcard.data.model.FlashcardRequest
 import com.mindcard.data.model.Mindcard
 import com.mindcard.data.model.MindcardItem
+import com.mindcard.data.service.DeckService
+import com.mindcard.data.service.toMindcard
 
-class MindcardRepository {
-    private val _mindcards = listOf(
-        Mindcard("1", "Kotlin Basics", "Programação", listOf(
-            MindcardItem("1", "O que é uma data class?", "Uma classe usada principalmente para armazenar dados."),
-            MindcardItem("2", "Como declarar uma variável imutável?", "Usando a palavra-chave 'val'.")
-        )),
-        Mindcard("2", "Jetpack Compose", "UI", listOf(
-            MindcardItem("3", "O que é Recomposition?", "O processo de chamar as funções composable novamente quando os dados mudam."),
-            MindcardItem("4", "Para que serve o remember?", "Para armazenar um valor na composição.")
-        )),
-        Mindcard("3", "Android Architecture", "Desenvolvimento", listOf(
-            MindcardItem("5", "O que faz o ViewModel?", "Gerencia dados relacionados à UI de forma consciente do ciclo de vida.")
-        ))
-    )
+class MindcardRepository(
+    private val sessionManager: SessionManager? = null,
+    private val deckService: DeckService = DeckService { sessionManager?.fetchAuthToken() }
+) {
+    private var _cachedMindcards = listOf<Mindcard>()
 
-    fun getMindcards(): List<Mindcard> {
-        return _mindcards
+    suspend fun getMindcards(): List<Mindcard> {
+        return try {
+            val response = deckService.api.listarDecks()
+            if (response.isSuccessful) {
+                // Converte a lista envelopada da API para a lista do App
+                _cachedMindcards = response.body()?.decks?.map { it.toMindcard() } ?: emptyList()
+                _cachedMindcards
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
     }
 
-    fun getMindcard(id: String): Mindcard? {
-        return _mindcards.find { it.id == id }
+    suspend fun getMindcard(id: String): Mindcard? {
+        return _cachedMindcards.find { it.id == id } ?: getMindcards().find { it.id == id }
     }
 
-    suspend fun insertMindcard(mindcard: Mindcard) {
-        println("SALVANDO NO MOCK: ${mindcard.title}")
+    suspend fun saveDeckOnApi(title: String, cards: List<MindcardItem>): Result<Unit> {
+        return try {
+            val request = DeckRequest(
+                titulo = title,
+                flashcards = cards.map { FlashcardRequest(it.question, it.answer) }
+            )
+
+            val response = deckService.api.createDeck(request)
+
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Erro ao cadastrar deck: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }
