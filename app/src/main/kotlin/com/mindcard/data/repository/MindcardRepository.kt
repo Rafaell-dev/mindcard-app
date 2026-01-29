@@ -18,8 +18,7 @@ class MindcardRepository(
         return try {
             val response = deckService.api.listarDecks()
             if (response.isSuccessful) {
-                // Converte a lista envelopada da API para a lista do App
-                _cachedMindcards = response.body()?.decks?.map { it.toMindcard() } ?: emptyList()
+                _cachedMindcards = response.body()?.map { it.toMindcard() } ?: emptyList()
                 _cachedMindcards
             } else {
                 emptyList()

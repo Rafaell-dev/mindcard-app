@@ -1,12 +1,24 @@
 package com.mindcard.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +36,7 @@ fun HomeScreen(
     mindcards: List<Mindcard>,
     onMindcardClick: (Mindcard) -> Unit,
     onAddClick: () -> Unit,
+    onRefreshClick: () -> Unit = {},
     onLogoutClick: () -> Unit
 ) {
     val cardColors = listOf(
@@ -60,9 +73,9 @@ fun HomeScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 24.dp, bottom = 12.dp),
+                        .padding(vertical = 24.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Olá, $userName!", style = MindCardTypography.Heading2)
@@ -72,30 +85,59 @@ fun HomeScreen(
                             color = MindCardColors.MutedForeground
                         )
                     }
-
-                    // BOTÃO DE LOGOUT COM COR VERMELHA VIVA
-                    IconButton(
-                        onClick = onLogoutClick,
-                        modifier = Modifier.padding(end = 125.dp) // Mantive sua posição
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "Logout",
-                            tint = Color.Red, // Vermelho vivo
-                            modifier = Modifier.size(28.dp)
-                        )
+                    Row {
+                        IconButton(onClick = onRefreshClick) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Atualizar",
+                                tint = MindCardColors.Primary
+                            )
+                        }
+                        IconButton(onClick = onLogoutClick) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                                contentDescription = "Logout",
+                                tint = Color.Red,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
                 }
             }
 
-            itemsIndexed(mindcards) { index, mindcard ->
-                MindcardCard(
-                    title = mindcard.title,
-                    backgroundColor = cardColors[index % cardColors.size],
-                    icon = { Text("📚", fontSize = 24.sp) },
-                    onClick = { onMindcardClick(mindcard) }
-                )
+            if (mindcards.isEmpty()) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("📭", fontSize = 48.sp)
+                        Text(
+                            "Nenhum deck encontrado",
+                            style = MindCardTypography.Heading3,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
+                        Text(
+                            "Clique no botão + para criar seu primeiro deck!",
+                            style = MindCardTypography.Body,
+                            color = MindCardColors.MutedForeground,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+                }
+            } else {
+                itemsIndexed(mindcards) { index, mindcard ->
+                    MindcardCard(
+                        title = mindcard.title,
+                        backgroundColor = cardColors[index % cardColors.size],
+                        icon = { Text("📚", fontSize = 24.sp) },
+                        onClick = { onMindcardClick(mindcard) }
+                    )
+                }
             }
         }
     }
 }
+
