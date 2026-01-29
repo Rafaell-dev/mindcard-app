@@ -84,13 +84,20 @@ fun NavGraph(
         composable(Screen.Home.route) {
             val mindcards by homeViewModel.mindcards.collectAsState()
             LaunchedEffect(Unit) { homeViewModel.loadMindcards() }
+            
             HomeScreen(
                 userName = currentUser?.nome ?: "Usuário",
                 mindcards = mindcards,
                 onMindcardClick = { m -> navController.navigate(Screen.Practice.route + "/${m.id}") },
                 onAddClick = {
-                    addFlashcardViewModel.reset() // GARANTE TELA LIMPA AO CLICAR NO +
+                    addFlashcardViewModel.reset()
                     navController.navigate(Screen.AddFlashcard.route)
+                },
+                onLogoutClick = {
+                    authViewModel.logout()
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
                 }
             )
         }

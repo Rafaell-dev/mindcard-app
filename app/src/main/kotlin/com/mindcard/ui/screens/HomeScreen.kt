@@ -1,20 +1,16 @@
 package com.mindcard.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mindcard.data.model.Mindcard
@@ -27,7 +23,8 @@ fun HomeScreen(
     userName: String,
     mindcards: List<Mindcard>,
     onMindcardClick: (Mindcard) -> Unit,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     val cardColors = listOf(
         MindCardColors.OldFlax,
@@ -54,19 +51,40 @@ fun HomeScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding) // 🔥 IMPORTANTE
+                .padding(padding)
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
             item {
-                Column(modifier = Modifier.padding(vertical = 24.dp)) {
-                    Text("Olá, $userName!", style = MindCardTypography.Heading2)
-                    Text(
-                        "Vamos estudar hoje?",
-                        style = MindCardTypography.Body,
-                        color = MindCardColors.MutedForeground
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp, bottom = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Olá, $userName!", style = MindCardTypography.Heading2)
+                        Text(
+                            "Vamos estudar hoje?",
+                            style = MindCardTypography.Body,
+                            color = MindCardColors.MutedForeground
+                        )
+                    }
+
+                    // BOTÃO DE LOGOUT COM COR VERMELHA VIVA
+                    IconButton(
+                        onClick = onLogoutClick,
+                        modifier = Modifier.padding(end = 125.dp) // Mantive sua posição
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                            contentDescription = "Logout",
+                            tint = Color.Red, // Vermelho vivo
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
             }
 
