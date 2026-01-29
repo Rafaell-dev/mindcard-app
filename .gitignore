@@ -18,6 +18,7 @@ keystore.properties
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+local.properties
 
 ### Kotlin ###
 .kotlin
