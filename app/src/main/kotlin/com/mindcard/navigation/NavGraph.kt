@@ -26,6 +26,7 @@ sealed class Screen(val route: String) {
     object Practice : Screen("practice")
     object Result : Screen("result")
     object AddFlashcard : Screen("add_flashcard")
+    object EditDeck : Screen("edit_deck")
 }
 
 @Composable
@@ -39,6 +40,7 @@ fun NavGraph(
     val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(mindcardRepository))
     val practiceViewModel: PracticeViewModel = viewModel(factory = PracticeViewModelFactory(mindcardRepository))
     val addFlashcardViewModel: AddFlashcardViewModel = viewModel(factory = AddFlashcardViewModelFactory(mindcardRepository))
+    val editDeckViewModel: EditDeckViewModel = viewModel(factory = EditDeckViewModelFactory(mindcardRepository))
 
     val currentUser by authViewModel.currentUser.collectAsState()
     val startDestination = if (currentUser != null) Screen.Home.route else Screen.Login.route
@@ -88,7 +90,7 @@ fun NavGraph(
             HomeScreen(
                 userName = currentUser?.nome ?: "Usuário",
                 mindcards = mindcards,
-                onMindcardClick = { m -> navController.navigate(Screen.Practice.route + "/${m.id}") },
+                onMindcardClick = { m -> navController.navigate(Screen.EditDeck.route + "/${m.id}") },
                 onAddClick = {
                     addFlashcardViewModel.reset()
                     navController.navigate(Screen.AddFlashcard.route)
@@ -108,6 +110,30 @@ fun NavGraph(
                 viewModel = addFlashcardViewModel,
                 onBackClick = { navController.popBackStack() },
                 onSaveSuccess = { 
+                    navController.popBackStack()
+                    homeViewModel.loadMindcards()
+                }
+            )
+        }
+        
+        composable(
+            route = Screen.EditDeck.route + "/{deckId}",
+            arguments = listOf(navArgument("deckId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val deckId = backStackEntry.arguments?.getString("deckId") ?: return@composable
+            LaunchedEffect(deckId) { editDeckViewModel.loadDeck(deckId) }
+            
+            EditDeckScreen(
+                viewModel = editDeckViewModel,
+                onBackClick = { navController.popBackStack() },
+                onPracticeClick = { 
+                    navController.navigate(Screen.Practice.route + "/$deckId")
+                },
+                onDeleteSuccess = {
+                    navController.popBackStack()
+                    homeViewModel.loadMindcards()
+                },
+                onSaveSuccess = {
                     navController.popBackStack()
                     homeViewModel.loadMindcards()
                 }
@@ -178,4 +204,8 @@ class PracticeViewModelFactory(private val repository: MindcardRepository) : Vie
 
 class AddFlashcardViewModelFactory(private val repository: MindcardRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T = AddFlashcardViewModel(repository) as T
+}
+
+class EditDeckViewModelFactory(private val repository: MindcardRepository) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T = EditDeckViewModel(repository) as T
 }
