@@ -1,6 +1,7 @@
 package com.mindcard.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.mindcard.data.model.User
 import com.mindcard.data.service.AuthService
@@ -18,8 +19,6 @@ sealed class AuthState {
     data class Success(val user: User) : AuthState()
     data class Error(val message: String) : AuthState()
 }
-
-
 
 class AuthViewModel(
     private val authService: AuthService,
@@ -114,5 +113,18 @@ class AuthViewModel(
         sessionManager.clearAuthToken()
         _currentUser.value = null
         _authState.value = AuthState.Idle
+    }
+}
+
+class AuthViewModelFactory(
+    private val authService: AuthService,
+    private val sessionManager: SessionManager
+) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
+            return AuthViewModel(authService, sessionManager) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

@@ -1,6 +1,7 @@
 package com.mindcard.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.mindcard.data.model.Mindcard
 import com.mindcard.data.repository.MindcardRepository
@@ -40,5 +41,15 @@ class HomeViewModel(private val mindcardRepository: MindcardRepository) : ViewMo
 
     fun refreshMindcards() {
         loadMindcards()
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+class HomeViewModelFactory(private val repository: MindcardRepository) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
+            return HomeViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

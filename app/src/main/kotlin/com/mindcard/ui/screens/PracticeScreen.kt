@@ -1,6 +1,5 @@
 package com.mindcard.ui.screens
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -15,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.mindcard.data.model.MindcardItem
 import com.mindcard.ui.components.Badge
 import com.mindcard.ui.components.PrimaryButton
@@ -29,6 +27,7 @@ fun PracticeScreen(
     currentIndex: Int,
     totalItems: Int,
     isAnswerVisible: Boolean,
+    timerText: String,
     onRevealAnswer: () -> Unit,
     onCorrect: () -> Unit,
     onIncorrect: () -> Unit,
@@ -51,7 +50,7 @@ fun PracticeScreen(
             IconButton(onClick = onClose) {
                 Icon(Icons.Default.Close, contentDescription = "Fechar")
             }
-            
+
             // Progress Bar
             Box(
                 modifier = Modifier
@@ -71,13 +70,16 @@ fun PracticeScreen(
 
         Spacer(Modifier.height(24.dp))
 
-        // Badges
+        // RF01: Centralizando os Badges e o Timer
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // Ajuste aqui: Mantém o espaçamento de 8dp, mas alinha o grupo todo ao Centro
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Badge(text = item.difficulty)
-            Badge(text = "00:45") // Timer mock
+            // RF04: O Timer já está aqui visualmente, lógica virá depois
+            Badge(text = timerText)
             Badge(text = "${currentIndex + 1}/$totalItems")
         }
 
@@ -99,7 +101,7 @@ fun PracticeScreen(
                     style = MindCardTypography.Heading2,
                     textAlign = TextAlign.Center
                 )
-                
+
                 if (isAnswerVisible) {
                     Spacer(Modifier.height(24.dp))
                     HorizontalDivider(color = MindCardColors.Border)
@@ -134,6 +136,7 @@ fun PracticeScreen(
                 )
             }
         } else {
+            // RF02: Botões de Errei/Acertei estilizados
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -141,7 +144,8 @@ fun PracticeScreen(
                 Button(
                     onClick = onIncorrect,
                     modifier = Modifier.weight(1f).height(48.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MindCardColors.Destructive),
+                    // Vermelho para erro
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)),
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Text("❌ Errei", fontWeight = FontWeight.Bold, color = Color.White)
@@ -149,10 +153,11 @@ fun PracticeScreen(
                 Button(
                     onClick = onCorrect,
                     modifier = Modifier.weight(1f).height(48.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MindCardColors.OldFlax),
+                    // Verde suave para sucesso
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF22C55E)),
                     shape = RoundedCornerShape(24.dp)
                 ) {
-                    Text("✅ Acertei", fontWeight = FontWeight.Bold, color = MindCardColors.JetBlack)
+                    Text("✅ Acertei", fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         }

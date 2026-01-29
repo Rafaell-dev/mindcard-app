@@ -25,4 +25,8 @@ class MindcardRepository {
     fun getMindcard(id: String): Mindcard? {
         return _mindcards.find { it.id == id }
     }
+
+    suspend fun insertMindcard(mindcard: Mindcard) {
+        println("SALVANDO NO MOCK: ${mindcard.title}")
+    }
 }

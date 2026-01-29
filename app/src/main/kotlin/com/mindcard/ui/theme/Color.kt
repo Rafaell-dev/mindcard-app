@@ -11,6 +11,7 @@ object MindCardColors {
     val FoxGray = Color(0xFF8C8C8C)         // Muted - textos secundários
     val RocketOrange = Color(0xFFF7CD63)    // Accent - categoria laranja
     val TaskBlue = Color(0xFFA3C8F9)        // Accent - categoria azul claro
+    val Onprimary = Color.White
 
     // Semânticas
     val Background = Color.White
