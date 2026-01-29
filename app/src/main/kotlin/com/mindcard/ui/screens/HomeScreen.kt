@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,13 +67,16 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .padding(top = 24.dp, bottom = 8.dp)
                 ) {
-                    // LOGO NO TOPO
+                    // LOGO NO TOPO - Ajustado para ficar mais próximo do texto
                     Image(
                         painter = painterResource(id = R.drawable.logo),
                         contentDescription = "Logo MindCard",
                         modifier = Modifier
-                            .size(120.dp) // Tamanho ajustado para a Home
-                            .padding(bottom = 16.dp)
+                            .width(150.dp) // Largura definida
+                            .wrapContentHeight() // Altura mínima necessária
+                            .padding(bottom = 13.dp), // Remove espaço extra abaixo
+                        contentScale = ContentScale.Fit,
+                        alignment = Alignment.CenterStart
                     )
 
                     Row(
